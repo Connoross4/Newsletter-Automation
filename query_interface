@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""
+Interactive Q&A interface for querying your digests database.
+"""
+import os
+import sqlite3
+from dotenv import load_dotenv
+from langchain_anthropic import ChatAnthropic
+from langchain.agents import initialize_agent, Tool
+
+# ---------------- Configuration ----------------
+load_dotenv()
+CLAUDE_KEY = os.getenv("CLAUDE_API_KEY")
+if not CLAUDE_KEY:
+    raise RuntimeError("CLAUDE_API_KEY not set in .env")
+
+# ---------------- LLM Setup ----------------
+llm = ChatAnthropic(
+    anthropic_api_key=CLAUDE_KEY,
+    model_name="claude-3-7-sonnet-20250219",
+    temperature=0
+)
+
+# ---------------- Database Connection ----------------
+DB_PATH = os.path.join(os.path.dirname(__file__), "digests.db")
+db = sqlite3.connect(DB_PATH)
+cursor = db.cursor()
+
+# ---------------- Tool Definitions ----------------
+def exec_sql(query: str) -> str:
+    """
+    Execute a SQL query on the articles table and return formatted results.
+    """
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    if not rows:
+        return "No results."
+    # Format as simple lines
+    formatted = []
+    for row in rows:
+        formatted.append(str(row))
+    return "\n".join(formatted)
+
+schema = (
+    "Table 'articles' with columns: id, source, title, link, summary, content, date"
+)
+
+tools = [
+    Tool(
+        name="sql_query",
+        func=exec_sql,
+        description=f"Run SQL against the articles DB. Use schema: {schema}."
+    )
+]
+
+# ---------------- Agent Initialization ----------------
+agent = initialize_agent(
+    tools,
+    llm,
+    agent="zero-shot-react-description",
+    verbose=True
+)
+
+# ---------------- Main Loop ----------------
+def main():
+    print("Enter natural language questions about your articles (e.g., 'Show me summaries for today').")
+    print("Type 'exit' or 'quit' to leave.")
+    while True:
+        user_input = input("> ")
+        if user_input.lower() in ("exit", "quit"):
+            print("Goodbye!")
+            break
+        try:
+            response = agent.run(user_input)
+            print(response)
+        except Exception as e:
+            print(f"Error: {e}")
+
+if __name__ == "__main__":
+    main()

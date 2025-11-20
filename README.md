@@ -1,5 +1,5 @@
 # Medium Newsletter Trading Digest Automation
-<img width="645" height="810" alt="Screenshot 2025-11-19 at 9 18 32 PM" src="https://github.com/user-attachments/assets/ab7624aa-0a64-41eb-9bef-c5d54bc0821a" />
+<img width="677" height="807" alt="Screenshot 2025-11-19 at 9 20 59 PM" src="https://github.com/user-attachments/assets/2a3d40be-d3e9-46af-bd59-e417d9f4f154" />
 
 This Python automation tool streamlines the process of turning your Medium (and Beehiiv) newsletter into actionable trading insights. It integrates directly with Gmail, downloads your most recent newsletter emails, extracts article links, fetches the full article content, summarizes the material using an AI summarizer, and stores the results locally for easy recall.
 
